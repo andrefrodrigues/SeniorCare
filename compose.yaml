@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: 'postgres:16.2'
+    environment:
+      - 'POSTGRES_DB=seniorcare'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=seniorcare'
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "seniorcare" ]
+  migrations:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: 'flyway/flyway:10.9-alpine'
+    command: -user=seniorcare -password=password -url=jdbc:postgresql://postgres/seniorcare migrate
+    volumes:
+      - type: bind
+        source: ./src/main/resources
+        target: /flyway/sql
+        read_only: true
